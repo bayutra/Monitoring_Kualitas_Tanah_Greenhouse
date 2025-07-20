@@ -4,60 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Kualitas Tanah Greenhouse</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* [CSS tetap sama seperti sebelumnya] */
-        /* Tidak perlu diubah, tetap gunakan CSS yang ada */
         :root {
             --primary: #2e7d32;
             --primary-light: #4caf50;
             --primary-dark: #1b5e20;
             --secondary: #ff9800;
             --accent: #2196f3;
-            --light: #e8f5e9;
-            --dark: #1a1a2e;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --warning: #ffeb3b;
-            --danger: #f44336;
-            --success: #8bc34a;
             --node1-color: #3498db;
             --node2-color: #e74c3c;
             --node3-color: #9b59b6;
+            --light: #e8f5e9;
+            --dark: #1a1a2e;
+            --card-bg: rgba(255, 255, 255, 0.12);
+            --warning: #ffeb3b;
+            --danger: #f44336;
+            --success: #8bc34a;
+            --glass-bg: rgba(40, 40, 60, 0.4);
+            --history-bg: rgba(30, 30, 50, 0.7);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             min-height: 100vh;
             padding: 20px;
-            color: #333;
+            color: #fff;
+            overflow-x: hidden;
         }
-        
+
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-        
+
         header {
-            background: rgba(26, 26, 46, 0.85);
+            background: var(--glass-bg);
             border-radius: 20px;
             padding: 20px 30px;
             margin-bottom: 30px;
@@ -68,637 +69,616 @@
             justify-content: space-between;
             align-items: center;
             animation: fadeInDown 1s ease;
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(76, 175, 80, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .logo {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
+
         .logo-icon {
             background: var(--primary);
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
             color: white;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.7);
+            animation: pulse 2s infinite;
         }
-        
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
         .logo-text h1 {
             color: white;
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 600;
+            background: linear-gradient(90deg, #fff, #4caf50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
         }
-        
+
         .logo-text p {
-            color: #a0a0c0;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            color: #c0c0e0;
+            letter-spacing: 1px;
         }
-        
+
         .system-info {
             display: flex;
             gap: 20px;
         }
-        
+
         .info-item {
             text-align: center;
-            padding: 10px 20px;
-            background: rgba(76, 175, 80, 0.15);
+            padding: 12px 25px;
+            background: rgba(40, 40, 60, 0.5);
             border-radius: 15px;
             border: 1px solid rgba(76, 175, 80, 0.3);
+            backdrop-filter: blur(5px);
+            min-width: 120px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        
+
+        .info-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
         .info-item .value {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 600;
-            color: white;
+            color: #4caf50;
+            font-family: 'Orbitron', sans-serif;
         }
-        
+
         .info-item .label {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: #c0c0e0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .tab {
+            padding: 12px 30px;
+            border-radius: 12px;
+            background: transparent;
+            border: none;
+            color: #c0c0e0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
             margin-bottom: 30px;
         }
-        
+
+        .history-section {
+            background: var(--history-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .chart-section {
+            background: var(--history-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header .node-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
         .card {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
             transition: transform 0.3s, box-shadow 0.3s;
             position: relative;
             overflow: hidden;
-            animation: cardAppear 0.5s ease;
-            animation-fill-mode: backwards;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: cardAppear 0.6s ease;
         }
-        
-        .card:nth-child(1) { 
-            animation-delay: 0.2s;
-            border-top: 4px solid var(--node1-color);
-        }
-        .card:nth-child(2) { 
-            animation-delay: 0.3s;
-            border-top: 4px solid var(--node2-color);
-        }
-        .card:nth-child(3) { 
-            animation-delay: 0.4s;
-            border-top: 4px solid var(--node3-color);
-        }
-        
-        @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        }
-        
+
         .card::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
+            width: 100%;
             height: 5px;
-            background: var(--primary);
-            border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, var(--node1-color), var(--node2-color));
         }
-        
+
+        .card.node1::before {
+            background: var(--node1-color);
+        }
+
+        .card.node2::before {
+            background: var(--node2-color);
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        }
+
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid var(--light);
-        }
-        
-        .card-header h2 {
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .node-id {
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .node1 .node-id { background: var(--node1-color); }
-        .node2 .node-id { background: var(--node2-color); }
-        .node3 .node-id { background: var(--node3-color); }
-        
-        .sensor-data {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        
-        .sensor-item {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            transition: transform 0.3s;
-        }
-        
-        .sensor-item:hover {
-            transform: translateY(-5px);
-        }
-        
-        .sensor-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 20px;
-            color: var(--primary);
-        }
-        
-        .sensor-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--primary-dark);
-        }
-        
-        .sensor-label {
-            font-size: 0.9rem;
-            color: #666;
-            font-weight: 500;
-        }
-        
-        .status {
-            display: inline-block;
-            margin-top: 5px;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .status-optimal { background: #e8f5e9; color: var(--primary); }
-        .status-warning { background: #fff8e1; color: #ff8f00; }
-        .status-danger { background: #ffebee; color: var(--danger); }
-        
-        .gauge-container {
-            margin: 20px 0;
-            position: relative;
-        }
-        
-        .gauge {
-            width: 100%;
-            height: 12px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .gauge-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 1s ease;
-        }
-        
-        .gauge-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-            font-size: 0.8rem;
-            color: #666;
-        }
-        
-        .recommendation {
-            background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.4);
-        }
-        
-        .rec-title {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .rec-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .rec-desc {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .chart-container {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            animation: cardAppear 0.6s ease;
-        }
-        
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px; /* Diperkecil */
-        }
-        
-        .chart-header h2 {
-            color: var(--primary-dark);
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 15px;
-        }
-        
-        select, button {
-            padding: 10px 20px;
-            border-radius: 12px;
-            border: none;
-            background: var(--primary);
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
-        }
-        
-        select:hover, button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(46, 125, 50, 0.4);
-        }
-        
-        select:focus {
-            outline: none;
-        }
-        
-        .node-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .node-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .node-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .node-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-        }
-        
-        .node-card.node1::after { background: var(--node1-color); }
-        .node-card.node2::after { background: var(--node2-color); }
-        .node-card.node3::after { background: var(--node3-color); }
-        
-        .node-status {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-        }
-        
-        .status-online { background: var(--success); box-shadow: 0 0 10px var(--success); }
-        .status-offline { background: var(--danger); }
-        
-        .node-name {
-            font-size: 1.3rem;
-            color: var(--primary-dark);
-            margin: 15px 0 5px;
-            font-weight: 600;
-        }
-        
-        .node-location {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        
-        .node-data {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .node-data-item {
-            text-align: center;
-        }
-        
-        .node-data-value {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        
-        .node1 .node-data-value { color: var(--node1-color); }
-        .node2 .node-data-value { color: var(--node2-color); }
-        .node3 .node-data-value { color: var(--node3-color); }
-        
-        .node-data-label {
-            font-size: 0.8rem;
-            color: #777;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-            margin-top: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .system-info {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            header {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
-            }
-            
-            .logo {
-                justify-content: center;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-        }
-        
-        /* Animations */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
-        .status-offline {
-            background: #f0f0f0;
-            color: #999;
-        }
-        
-        .offline-indicator {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            color: white;
+        .card-header h2 {
+            font-size: 1.6rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 20px;
-            z-index: 10;
+            gap: 10px;
+            font-weight: 600;
+            color: white;
         }
-        
-        /* Firebase connection status */
-        .connection-status {
-            background: rgba(0,0,0,0.6);
-            border-radius: 20px;
-            padding: 0.3rem 1rem;
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .status-connected {
-            background-color: #27ae60;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .status-disconnected {
-            background-color: #e74c3c;
-        }
-        
+
         .node-title {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
-        .node-badge {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        
-        .node1-badge { background-color: var(--node1-color); }
-        .node2-badge { background-color: var(--node2-color); }
-        .node3-badge { background-color: var(--node3-color); }
-        
-        /* Riwayat */
-        .history-container {
-            background: var(--card-bg);
+
+        .node-id {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            margin-bottom: 30px;
-            animation: cardAppear 0.6s ease;
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
         }
-        
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .node-badge {
+            background: var(--node1-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .node1-badge {
+            background: var(--node1-color);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .node2-badge {
+            background: var(--node2-color);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .sensor-data {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             margin-bottom: 25px;
         }
-        
-        .history-header h2 {
-            color: var(--primary-dark);
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .history-table-container {
-            max-height: 400px;
-            overflow-y: auto;
+
+        .sensor-item {
+            background: rgba(40, 40, 60, 0.5);
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .history-table th {
-            background: var(--primary);
-            color: white;
-            padding: 12px 15px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-        }
-        
-        .history-table tr:nth-child(even) {
-            background: #f8f8f8;
-        }
-        
-        .history-table tr:hover {
-            background: #e8f5e9;
-        }
-        
-        .history-table td {
-            padding: 10px 15px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .history-table .date-col {
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .history-table .value-col {
-            font-weight: 600;
-        }
-        
-        .node1 .value-col { color: var(--node1-color); }
-        .node2 .value-col { color: var(--node2-color); }
-        .node3 .value-col { color: var(--node3-color); }
-        
-        .history-loading {
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             text-align: center;
-            padding: 30px;
-            color: #666;
-        }
-        
-        .history-loading i {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: var(--primary);
-            display: block;
-        }
-        
-        /* Perbaikan untuk grafik */
-        .chart-wrapper {
+            transition: transform 0.3s;
             position: relative;
-            height: 250px; /* Tinggi grafik diperkecil */
-            margin-top: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .chart-container.loading::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.7);
+
+        .sensor-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sensor-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 0 0 20px 20px;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: white;
+            position: relative;
         }
-        
-        .chart-container.loading::before {
-            content: 'Memuat data...';
+
+        .sensor-icon::after {
+            content: "";
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-            color: var(--primary);
-            font-weight: 600;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--primary-light);
+            animation: ripple 2s infinite;
         }
-        
-        /* Tampilan untuk data offline */
-        .offline .sensor-value,
-        .offline .sensor-value + .status {
-            color: #999 !important;
+
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .sensor-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .sensor-label {
+            font-size: 0.95rem;
+            color: #c0c0e0;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-optimal { background: rgba(46, 125, 50, 0.3); color: #8bc34a; border: 1px solid #8bc34a; }
+        .status-warning { background: rgba(255, 152, 0, 0.3); color: #ff9800; border: 1px solid #ff9800; }
+        .status-danger { background: rgba(244, 67, 54, 0.3); color: #f44336; border: 1px solid #f44336; }
+
+        .gauge-container {
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .gauge-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #c0c0e0;
+            font-size: 0.95rem;
+        }
+
+        .gauge {
+            width: 100%;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+            background: linear-gradient(90deg, #ff9800, #4caf50);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .node1 .gauge-fill {
+            background: linear-gradient(90deg, #ff9800, var(--node1-color));
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .node2 .gauge-fill {
+            background: linear-gradient(90deg, #ff9800, var(--node2-color));
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #a0a0c0;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, rgba(40, 40, 60, 0.7), rgba(30, 30, 50, 0.9));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rec-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #4caf50;
+        }
+
+        .rec-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ff9800, #4caf50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .rec-desc {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .history-table th {
+            background: rgba(52, 152, 219, 0.3);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #3498db;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .history-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0f0;
+            font-size: 0.95rem;
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .history-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chart-tab {
+            padding: 8px 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #c0c0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chart-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Tampilan waktu yang disederhanakan */
+        .time-display {
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .date-display {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .time-display-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #4caf50;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 20px;
+            background: rgba(40, 40, 60, 0.5);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Animasi floating */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Responsif */
+        @media (max-width: 1100px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .sensor-data {
+                grid-template-columns: 1fr;
+            }
+            
+            .system-info {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .time-display-value {
+                font-size: 2.5rem;
+            }
+            
+            .date-display {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -706,364 +686,214 @@
     <div class="container">
         <header>
             <div class="logo">
-                <div class="logo-icon pulse">
+                <div class="logo-icon floating">
                     <i class="fas fa-seedling"></i>
                 </div>
                 <div class="logo-text">
                     <h1>Monitoring Kualitas Tanah Greenhouse</h1>
-                    <p>Sistem Rekomendasi Pemupukan Berbasis Fuzzy Logic</p>
-                    <div class="connection-status">
-                        <span id="statusIndicator" class="status-indicator status-disconnected"></span>
-                        <span id="statusText">Menghubungkan ke Firebase...</span>
-                    </div>
+                    <p>Sistem Pemantauan Kualitas Tanah Multi Node</p>
                 </div>
             </div>
             <div class="system-info">
                 <div class="info-item">
-                    <div class="value" id="activeNodes">0</div>
+                    <div class="value" id="total-nodes">2</div>
                     <div class="label">Node Aktif</div>
                 </div>
                 <div class="info-item">
-                    <div class="value" id="totalSensors">0</div>
-                    <div class="label">Sensor</div>
-                </div>
-                <div class="info-item">
-                    <div class="value" id="systemStatus">0%</div>
-                    <div class="label">Sistem Stabil</div>
+                    <div class="value" id="last-update">--:--</div>
+                    <div class="label">Update Terakhir</div>
                 </div>
             </div>
         </header>
         
-        <div class="dashboard">
-            <!-- Node 1 -->
-            <div class="card node1" id="node1-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-tree"></i> <span class="node-title">Petak A <span class="node-badge node1-badge"></span></span></h2>
-                    <span class="node-id">Node 1</span>
-                </div>
-                
-                <div class="sensor-data">
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-tint"></i>
+        <!-- Tampilan Waktu dan Tanggal yang disederhanakan -->
+        <div class="time-display">
+            <div class="date-display" id="current-date">Selasa, 21 Juli 2023</div>
+            <div class="time-display-value" id="wib-time">00:00:00</div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">Dashboard</button>
+            <button class="tab" data-tab="history">Riwayat Data</button>
+            <button class="tab" data-tab="charts">Analisis Grafik</button>
+        </div>
+
+        <div id="dashboard-content">
+            <div class="dashboard">
+                <!-- Node 1 -->
+                <div class="card node1" id="node1-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-tree"></i> <span class="node-title">Petak A <span class="node-badge node1-badge">AKTIF</span></span></h2>
+                        <span class="node-id">Node 1</span>
+                    </div>
+
+                    <div class="sensor-data">
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="sensor-value" id="node1-moisture">--</div>
+                            <div class="sensor-label">Kelembaban Tanah</div>
+                            <div class="status status-optimal" id="node1-moisture-status">--</div>
                         </div>
-                        <div class="sensor-value" id="node1-moisture">--</div>
-                        <div class="sensor-label">Kelembaban Tanah</div>
-                        <div class="status status-optimal" id="node1-moisture-status">--</div>
-                    </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-flask"></i>
+
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                            <div class="sensor-value" id="node1-nutrient">--</div>
+                            <div class="sensor-label">Nutrisi Tanah</div>
+                            <div class="status status-warning" id="node1-nutrient-status">--</div>
                         </div>
-                        <div class="sensor-value" id="node1-ph">--</div>
-                        <div class="sensor-label">pH Tanah</div>
-                        <div class="status status-optimal" id="node1-ph-status">--</div>
-                    </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-atom"></i>
+
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div class="sensor-value" id="node1-temperature">--</div>
+                            <div class="sensor-label">Suhu Tanah</div>
+                            <div class="status status-optimal" id="node1-temperature-status">--</div>
                         </div>
-                        <div class="sensor-value" id="node1-nutrient">--</div>
-                        <div class="sensor-label">Nutrisi Tanah</div>
-                        <div class="status status-warning" id="node1-nutrient-status">--</div>
                     </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-thermometer-half"></i>
+
+                    <div class="gauge-container">
+                        <div class="gauge-title">
+                            <span>Indikator Kelembaban Tanah</span>
+                            <span id="node1-moisture-percent">0%</span>
                         </div>
-                        <div class="sensor-value" id="node1-temperature">--</div>
-                        <div class="sensor-label">Suhu Udara</div>
-                        <div class="status status-optimal" id="node1-temperature-status">--</div>
-                    </div>
-                </div>
-                
-                <div class="gauge-container">
-                    <div class="gauge">
-                        <div class="gauge-fill" id="node1-gauge" style="width: 0%; background: linear-gradient(90deg, #ff9800, #4caf50);"></div>
-                    </div>
-                    <div class="gauge-labels">
-                        <span>Kering</span>
-                        <span>Optimal</span>
-                        <span>Basah</span>
-                    </div>
-                </div>
-                
-                <div class="recommendation">
-                    <div class="rec-title">
-                        <i class="fas fa-robot"></i> Rekomendasi Pemupukan
-                    </div>
-                    <div class="rec-value" id="node1-rec-level">--</div>
-                    <div class="rec-desc" id="node1-rec-desc">Menunggu data sensor...</div>
-                </div>
-            </div>
-            
-            <!-- Node 2 -->
-            <div class="card node2" id="node2-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-tree"></i> <span class="node-title">Petak B <span class="node-badge node2-badge"></span></span></h2>
-                    <span class="node-id">Node 2</span>
-                </div>
-                
-                <div class="sensor-data">
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-tint"></i>
+                        <div class="gauge">
+                            <div class="gauge-fill" id="node1-gauge" style="width: 0%"></div>
                         </div>
-                        <div class="sensor-value" id="node2-moisture">--</div>
-                        <div class="sensor-label">Kelembaban Tanah</div>
-                        <div class="status status-warning" id="node2-moisture-status">--</div>
-                    </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-flask"></i>
+                        <div class="gauge-labels">
+                            <span>Kering</span>
+                            <span>Optimal</span>
+                            <span>Basah</span>
                         </div>
-                        <div class="sensor-value" id="node2-ph">--</div>
-                        <div class="sensor-label">pH Tanah</div>
-                        <div class="status status-warning" id="node2-ph-status">--</div>
                     </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-atom"></i>
+
+                    <div class="recommendation">
+                        <div class="rec-title">
+                            <i class="fas fa-robot"></i> Rekomendasi Pemupukan
                         </div>
-                        <div class="sensor-value" id="node2-nutrient">--</div>
-                        <div class="sensor-label">Nutrisi Tanah</div>
-                        <div class="status status-danger" id="node2-nutrient-status">--</div>
-                    </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-thermometer-half"></i>
-                        </div>
-                        <div class="sensor-value" id="node2-temperature">--</div>
-                        <div class="sensor-label">Suhu Udara</div>
-                        <div class="status status-warning" id="node2-temperature-status">--</div>
+                        <div class="rec-value" id="node1-rec-level">--</div>
+                        <div class="rec-desc" id="node1-rec-desc">Menunggu data sensor...</div>
                     </div>
                 </div>
-                
-                <div class="gauge-container">
-                    <div class="gauge">
-                        <div class="gauge-fill" id="node2-gauge" style="width: 0%; background: linear-gradient(90deg, #ff9800, #4caf50);"></div>
+
+                <!-- Node 2 -->
+                <div class="card node2" id="node2-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-tree"></i> <span class="node-title">Petak B <span class="node-badge node2-badge">AKTIF</span></span></h2>
+                        <span class="node-id">Node 2</span>
                     </div>
-                    <div class="gauge-labels">
-                        <span>Kering</span>
-                        <span>Optimal</span>
-                        <span>Basah</span>
-                    </div>
-                </div>
-                
-                <div class="recommendation">
-                    <div class="rec-title">
-                        <i class="fas fa-robot"></i> Rekomendasi Pemupukan
-                    </div>
-                    <div class="rec-value" id="node2-rec-level">--</div>
-                    <div class="rec-desc" id="node2-rec-desc">Menunggu data sensor...</div>
-                </div>
-            </div>
-            
-            <!-- Node 3 -->
-            <div class="card node3" id="node3-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-tree"></i> <span class="node-title">Petak C <span class="node-badge node3-badge"></span></span></h2>
-                    <span class="node-id">Node 3</span>
-                </div>
-                
-                <div class="sensor-data">
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-tint"></i>
+
+                    <div class="sensor-data">
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="sensor-value" id="node2-moisture">--</div>
+                            <div class="sensor-label">Kelembaban Tanah</div>
+                            <div class="status status-optimal" id="node2-moisture-status">--</div>
                         </div>
-                        <div class="sensor-value" id="node3-moisture">--</div>
-                        <div class="sensor-label">Kelembaban Tanah</div>
-                        <div class="status status-optimal" id="node3-moisture-status">--</div>
-                    </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-flask"></i>
+
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                            <div class="sensor-value" id="node2-nutrient">--</div>
+                            <div class="sensor-label">Nutrisi Tanah</div>
+                            <div class="status status-warning" id="node2-nutrient-status">--</div>
                         </div>
-                        <div class="sensor-value" id="node3-ph">--</div>
-                        <div class="sensor-label">pH Tanah</div>
-                        <div class="status status-optimal" id="node3-ph-status">--</div>
-                    </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-atom"></i>
+
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div class="sensor-value" id="node2-temperature">--</div>
+                            <div class="sensor-label">Suhu Tanah</div>
+                            <div class="status status-optimal" id="node2-temperature-status">--</div>
                         </div>
-                        <div class="sensor-value" id="node3-nutrient">--</div>
-                        <div class="sensor-label">Nutrisi Tanah</div>
-                        <div class="status status-warning" id="node3-nutrient-status">--</div>
                     </div>
-                    
-                    <div class="sensor-item">
-                        <div class="sensor-icon">
-                            <i class="fas fa-thermometer-half"></i>
+
+                    <div class="gauge-container">
+                        <div class="gauge-title">
+                            <span>Indikator Kelembaban Tanah</span>
+                            <span id="node2-moisture-percent">0%</span>
                         </div>
-                        <div class="sensor-value" id="node3-temperature">--</div>
-                        <div class="sensor-label">Suhu Udara</div>
-                        <div class="status status-optimal" id="node3-temperature-status">--</div>
+                        <div class="gauge">
+                            <div class="gauge-fill" id="node2-gauge" style="width: 0%"></div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span>Kering</span>
+                            <span>Optimal</span>
+                            <span>Basah</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="gauge-container">
-                    <div class="gauge">
-                        <div class="gauge-fill" id="node3-gauge" style="width: 0%; background: linear-gradient(90deg, #ff9800, #4caf50);"></div>
+
+                    <div class="recommendation">
+                        <div class="rec-title">
+                            <i class="fas fa-robot"></i> Rekomendasi Pemupukan
+                        </div>
+                        <div class="rec-value" id="node2-rec-level">--</div>
+                        <div class="rec-desc" id="node2-rec-desc">Menunggu data sensor...</div>
                     </div>
-                    <div class="gauge-labels">
-                        <span>Kering</span>
-                        <span>Optimal</span>
-                        <span>Basah</span>
-                    </div>
-                </div>
-                
-                <div class="recommendation">
-                    <div class="rec-title">
-                        <i class="fas fa-robot"></i> Rekomendasi Pemupukan
-                    </div>
-                    <div class="rec-value" id="node3-rec-level">--</div>
-                    <div class="rec-desc" id="node3-rec-desc">Menunggu data sensor...</div>
                 </div>
             </div>
         </div>
         
-        <div class="chart-container">
-            <div class="chart-header">
-                <h2><i class="fas fa-chart-line"></i> Data Historis Kualitas Tanah</h2>
-                <div class="controls">
-                    <select id="node-select">
-                        <option value="1">Node 1 - Petak A</option>
-                        <option value="2">Node 2 - Petak B</option>
-                        <option value="3">Node 3 - Petak C</option>
-                    </select>
-                    <select id="time-range">
-                        <option value="1">24 Jam Terakhir</option>
-                        <option value="3">3 Hari Terakhir</option>
-                        <option value="7">7 Hari Terakhir</option>
-                    </select>
-                    <button id="refresh-chart-btn"><i class="fas fa-sync-alt"></i> Perbarui</button>
-                </div>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="historyChart"></canvas>
-            </div>
-        </div>
-        
-        <!-- Bagian Riwayat Baru -->
-        <div class="history-container">
-            <div class="history-header">
+        <!-- Riwayat Data -->
+        <div class="history-section" id="history-content">
+            <div class="section-header">
                 <h2><i class="fas fa-history"></i> Riwayat Data Sensor</h2>
-                <div class="controls">
-                    <select id="history-node-select">
-                        <option value="1">Node 1 - Petak A</option>
-                        <option value="2">Node 2 - Petak B</option>
-                        <option value="3">Node 3 - Petak C</option>
-                    </select>
-                    <select id="history-limit">
-                        <option value="10">10 Data Terbaru</option>
-                        <option value="20">20 Data Terbaru</option>
-                        <option value="50">50 Data Terbaru</option>
-                    </select>
-                    <button id="refresh-history-btn"><i class="fas fa-sync-alt"></i> Muat Riwayat</button>
-                </div>
+                <select class="node-selector" id="history-node-selector">
+                    <option value="1">Node 1 - Petak A</option>
+                    <option value="2">Node 2 - Petak B</option>
+                </select>
             </div>
-            <div class="history-table-container">
+            
+            <div class="table-container">
                 <table class="history-table">
                     <thead>
                         <tr>
-                            <th>Tanggal & Waktu (WIB)</th>
+                            <th>Waktu (WIB)</th>
                             <th>Kelembaban</th>
-                            <th>pH</th>
                             <th>Nutrisi</th>
                             <th>Suhu</th>
-                            <th>Rekomendasi</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="history-table-body">
-                        <tr>
-                            <td colspan="6" class="history-loading">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <p>Memuat riwayat data...</p>
-                            </td>
-                        </tr>
+                    <tbody id="history-data">
+                        <!-- Data akan diisi oleh JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
         
-        <div class="chart-container">
-            <div class="chart-header">
-                <h2><i class="fas fa-microchip"></i> Status Node Sensor</h2>
+        <!-- Grafik Analisis -->
+        <div class="chart-section" id="chart-content">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Analisis Grafik</h2>
+                <select class="node-selector" id="chart-node-selector">
+                    <option value="1">Node 1 - Petak A</option>
+                    <option value="2">Node 2 - Petak B</option>
+                </select>
             </div>
-            <div class="node-grid">
-                <div class="node-card node1">
-                    <div class="node-status status-offline" id="node1-status"></div>
-                    <div class="node-name">Node 1</div>
-                    <div class="node-location">Petak A - Sayuran</div>
-                    <div class="node-data">
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node1-moisture">--</div>
-                            <div class="node-data-label">Kelembaban</div>
-                        </div>
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node1-ph">--</div>
-                            <div class="node-data-label">pH</div>
-                        </div>
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node1-nutrient">--</div>
-                            <div class="node-data-label">Nutrisi</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="node-card node2">
-                    <div class="node-status status-offline" id="node2-status"></div>
-                    <div class="node-name">Node 2</div>
-                    <div class="node-location">Petak B - Buah</div>
-                    <div class="node-data">
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node2-moisture">--</div>
-                            <div class="node-data-label">Kelembaban</div>
-                        </div>
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node2-ph">--</div>
-                            <div class="node-data-label">pH</div>
-                        </div>
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node2-nutrient">--</div>
-                            <div class="node-data-label">Nutrisi</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="node-card node3">
-                    <div class="node-status status-offline" id="node3-status"></div>
-                    <div class="node-name">Node 3</div>
-                    <div class="node-location">Petak C - Tanaman Hias</div>
-                    <div class="node-data">
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node3-moisture">--</div>
-                            <div class="node-data-label">Kelembaban</div>
-                        </div>
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node3-ph">--</div>
-                            <div class="node-data-label">pH</div>
-                        </div>
-                        <div class="node-data-item">
-                            <div class="node-data-value" id="status-node3-nutrient">--</div>
-                            <div class="node-data-label">Nutrisi</div>
-                        </div>
-                    </div>
-                </div>
+            
+            <div class="chart-tabs">
+                <button class="chart-tab active" data-chart="moisture">Kelembaban</button>
+                <button class="chart-tab" data-chart="nutrient">Nutrisi</button>
+                <button class="chart-tab" data-chart="temperature">Suhu</button>
+                <button class="chart-tab" data-chart="comparison">Perbandingan</button>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="sensor-chart"></canvas>
             </div>
         </div>
-        
+
         <footer>
-            <p>Sistem Monitoring Kualitas Tanah Greenhouse &copy; 2023 | Rekomendasi Pemupukan Berbasis Fuzzy Logic</p>
+            <p>Sistem Monitoring Kualitas Tanah Greenhouse &copy; 2023 | Pemantauan Berbasis Fuzzy Logic</p>
         </footer>
     </div>
 
@@ -1075,583 +905,685 @@
             databaseURL: "https://uas-sistom-default-rtdb.firebaseio.com",
             projectId: "uas-sistom",
             storageBucket: "uas-sistom.appspot.com",
-            // messagingSenderId dan appId tidak wajib jika tidak menggunakan fitur terkait
         };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
-        // ======================== FUNGSI UTAMA ======================== //
         
-        // DOM elements
-        const statusIndicator = document.getElementById('statusIndicator');
-        const statusText = document.getElementById('statusText');
-        const activeNodesEl = document.getElementById('activeNodes');
-        const totalSensorsEl = document.getElementById('totalSensors');
-        const systemStatusEl = document.getElementById('systemStatus');
+        // Inisialisasi grafik
+        const ctx = document.getElementById('sensor-chart').getContext('2d');
+        let sensorChart;
         
-        // Grafik dan riwayat
-        const historyChartCanvas = document.getElementById('historyChart');
-        const historyTableBody = document.getElementById('history-table-body');
-        const refreshChartBtn = document.getElementById('refresh-chart-btn');
-        const refreshHistoryBtn = document.getElementById('refresh-history-btn');
-        const nodeSelect = document.getElementById('node-select');
-        const timeRange = document.getElementById('time-range');
-        const historyNodeSelect = document.getElementById('history-node-select');
-        const historyLimit = document.getElementById('history-limit');
-        
-        let historyChart = null;
-
-        // Node status tracking
-        const nodeStatus = {
-            '1': { online: false, lastUpdate: null },
-            '2': { online: false, lastUpdate: null },
-            '3': { online: false, lastUpdate: null }
+        // Referensi ke lokasi data sensor
+        const nodes = {
+            1: database.ref('sensor_data/node_1'),
+            2: database.ref('sensor_data/node_2')
         };
-
-        // Firebase connection status
-        firebase.database().ref('.info/connected').on('value', (snapshot) => {
-            if (snapshot.val() === true) {
-                statusIndicator.className = 'status-indicator status-connected';
-                statusText.textContent = 'Terhubung ke Firebase';
-                initRealTimeListeners();
-            } else {
-                statusIndicator.className = 'status-indicator status-disconnected';
-                statusText.textContent = 'Kehilangan koneksi Firebase';
-            }
-        });
-
-        // Inisialisasi listener realtime
-        function initRealTimeListeners() {
-            // Listen for sensor data
-            const sensorDataRef = database.ref('sensor_data');
-            let activeNodes = new Set();
-            let totalSensors = 0;
-            let lastUpdateTimes = {};
-
-            sensorDataRef.on('child_added', (snapshot) => {
-                const nodeKey = snapshot.key;
-                const nodeId = nodeKey.split('_')[1];
-                activeNodes.add(nodeId);
-                
-                // Update node status to online
-                updateNodeStatus(nodeId, 'online');
-                updateSystemInfo();
-                
-                // Listen for new data on this node
-                snapshot.ref.limitToLast(1).on('child_added', (childSnapshot) => {
-                    const data = childSnapshot.val();
-                    
-                    // Parse data sesuai format
-                    const sensorData = {
-                        moisture: data.moisture,
-                        ph: data.ph,
-                        nutrient: data.nutrient,
-                        temperature: data.temperature,
-                        humidity: data.humidity,
-                        timestamp: data.timestamp || Date.now()
-                    };
-                    
-                    // Record last update time
-                    lastUpdateTimes[nodeId] = new Date();
-                    nodeStatus[nodeId].lastUpdate = new Date();
-                    
-                    updateDashboard(nodeId, sensorData);
-                });
-            });
-
-            // Set interval untuk cek node offline
-            setInterval(checkNodeOfflineStatus, 30000);
-        }
-
-        // Fungsi untuk mengecek status node offline
-        function checkNodeOfflineStatus() {
-            const now = new Date();
-            
-            for (const nodeId in nodeStatus) {
-                if (nodeStatus[nodeId].lastUpdate) {
-                    const timeDiff = (now - nodeStatus[nodeId].lastUpdate) / 1000; // in seconds
-                    
-                    // Jika lebih dari 60 detik tidak ada update, anggap offline
-                    if (timeDiff > 60) {
-                        if (nodeStatus[nodeId].online) {
-                            updateNodeStatus(nodeId, 'offline');
-                            resetNodeData(nodeId);
-                            updateSystemInfo();
-                        }
-                    }
-                }
-            }
-        }
-
-        // Fungsi untuk mereset data node yang offline
-        function resetNodeData(nodeId) {
-            // Reset card data
-            document.getElementById(`node${nodeId}-moisture`).textContent = '--';
-            document.getElementById(`node${nodeId}-ph`).textContent = '--';
-            document.getElementById(`node${nodeId}-nutrient`).textContent = '--';
-            document.getElementById(`node${nodeId}-temperature`).textContent = '--';
-            
-            // Reset status indicators
-            document.getElementById(`node${nodeId}-moisture-status`).textContent = 'Offline';
-            document.getElementById(`node${nodeId}-moisture-status`).className = 'status status-offline';
-            document.getElementById(`node${nodeId}-ph-status`).textContent = 'Offline';
-            document.getElementById(`node${nodeId}-ph-status`).className = 'status status-offline';
-            document.getElementById(`node${nodeId}-nutrient-status`).textContent = 'Offline';
-            document.getElementById(`node${nodeId}-nutrient-status`).className = 'status status-offline';
-            document.getElementById(`node${nodeId}-temperature-status`).textContent = 'Offline';
-            document.getElementById(`node${nodeId}-temperature-status`).className = 'status status-offline';
-            
-            // Reset gauge
-            document.getElementById(`node${nodeId}-gauge`).style.width = '0%';
-            
-            // Reset recommendation
-            document.getElementById(`node${nodeId}-rec-level`).textContent = '--';
-            document.getElementById(`node${nodeId}-rec-desc`).textContent = 'Node offline';
-            
-            // Reset status card
-            document.getElementById(`status-node${nodeId}-moisture`).textContent = '--';
-            document.getElementById(`status-node${nodeId}-ph`).textContent = '--';
-            document.getElementById(`status-node${nodeId}-nutrient`).textContent = '--';
-        }
-
-        // ======================== FUNGSI UTILITAS ======================== //
         
-        // Fungsi untuk mengonversi timestamp ke format WIB
+        // Data history
+        let historyData = {
+            1: [],
+            2: []
+        };
+        
+        // Format waktu untuk Indonesia (WIB)
         function formatTimeWIB(timestamp) {
             const date = new Date(timestamp);
-            // WIB adalah UTC+7
-            const offset = 7 * 60; // 7 jam dalam menit
-            const localDate = new Date(date.getTime() + offset * 60 * 1000);
             
-            return localDate.toLocaleString('id-ID', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+            // Daftar nama hari dalam bahasa Indonesia
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const dayName = days[date.getDay()];
+            
+            // Daftar nama bulan dalam bahasa Indonesia
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            
+            return `${dayName}, ${day} ${month} ${year} ${hours}:${minutes}`;
+        }
+        
+        // Format waktu untuk tabel riwayat
+        function formatTimeForTable(timestamp) {
+            const date = new Date(timestamp);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        
+        // Format tanggal lengkap
+        function formatFullDate(date) {
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            const dayName = days[date.getDay()];
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            
+            return `${dayName}, ${day} ${month} ${year}`;
+        }
+        
+        // Update tampilan waktu (hanya WIB)
+        function updateTimeDisplay() {
+            const now = new Date();
+            
+            // Waktu WIB (UTC+7)
+            const wibHours = (now.getUTCHours() + 7) % 24;
+            const displayHours = wibHours.toString().padStart(2, '0');
+            const displayMinutes = now.getUTCMinutes().toString().padStart(2, '0');
+            const displaySeconds = now.getUTCSeconds().toString().padStart(2, '0');
+            document.getElementById('wib-time').textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
+            
+            // Tanggal lengkap
+            document.getElementById('current-date').textContent = formatFullDate(now);
+        }
+        
+        // Update waktu setiap detik
+        setInterval(updateTimeDisplay, 1000);
+        updateTimeDisplay(); // Panggil pertama kali
+
+        // Fungsi untuk mengupdate dashboard per node
+        function updateNodeDashboard(nodeId, snapshot) {
+            const data = snapshot.val();
+            if (data) {
+                // Ambil data terbaru
+                const keys = Object.keys(data);
+                const latestKey = keys[keys.length - 1];
+                const latestData = data[latestKey];
+                
+                // Update waktu terakhir
+                const now = new Date();
+                document.getElementById('last-update').textContent = 
+                    `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                // Update sensor
+                document.getElementById(`node${nodeId}-moisture`).textContent = latestData.moisture.toFixed(1) + '%';
+                document.getElementById(`node${nodeId}-moisture-status`).textContent = getMoistureStatus(latestData.moisture);
+                document.getElementById(`node${nodeId}-moisture-status`).className = `status ${getStatusClass('moisture', latestData.moisture)}`;
+                document.getElementById(`node${nodeId}-gauge`).style.width = latestData.moisture + '%';
+                document.getElementById(`node${nodeId}-moisture-percent`).textContent = latestData.moisture.toFixed(1) + '%';
+
+                document.getElementById(`node${nodeId}-nutrient`).textContent = latestData.nutrient.toFixed(0) + ' ppm';
+                document.getElementById(`node${nodeId}-nutrient-status`).textContent = getNutrientStatus(latestData.nutrient);
+                document.getElementById(`node${nodeId}-nutrient-status`).className = `status ${getStatusClass('nutrient', latestData.nutrient)}`;
+
+                document.getElementById(`node${nodeId}-temperature`).textContent = latestData.temperature.toFixed(1) + '°C';
+                document.getElementById(`node${nodeId}-temperature-status`).textContent = getTemperatureStatus(latestData.temperature);
+                document.getElementById(`node${nodeId}-temperature-status`).className = `status ${getStatusClass('temperature', latestData.temperature)}`;
+
+                // Update rekomendasi
+                const rec = getFertilizationRecommendation(latestData.nutrient);
+                document.getElementById(`node${nodeId}-rec-level`).textContent = rec.level;
+                document.getElementById(`node${nodeId}-rec-desc`).textContent = rec.desc;
+                
+                // Update status node
+                document.querySelector(`#node${nodeId}-card .node-badge`).textContent = 'AKTIF';
+                
+                // Tambahkan ke history
+                const timestamp = new Date().getTime();
+                if (historyData[nodeId].length >= 10) {
+                    historyData[nodeId].shift();
+                }
+                historyData[nodeId].push({
+                    timestamp: timestamp,
+                    moisture: latestData.moisture,
+                    nutrient: latestData.nutrient,
+                    temperature: latestData.temperature
+                });
+                
+                // Update tampilan history jika sedang aktif
+                if (document.getElementById('history-content').style.display === 'block') {
+                    updateHistoryTable();
+                }
+                
+                // Update tampilan grafik jika sedang aktif
+                if (document.getElementById('chart-content').style.display === 'block') {
+                    updateChart();
+                }
+            }
+        }
+
+        // Fungsi untuk mendapatkan class status
+        function getStatusClass(type, value) {
+            if (type === 'moisture') {
+                if (value < 30) return 'status-danger';
+                else if (value >= 30 && value <= 70) return 'status-optimal';
+                else return 'status-warning';
+            }
+            else if (type === 'nutrient') {
+                if (value < 500) return 'status-danger';
+                else if (value >= 500 && value <= 1000) return 'status-optimal';
+                else return 'status-warning';
+            }
+            else if (type === 'temperature') {
+                if (value < 20) return 'status-warning';
+                else if (value >= 20 && value <= 35) return 'status-optimal';
+                else return 'status-danger';
+            }
+            return 'status-optimal';
+        }
+
+        // Fungsi status sensor
+        function getMoistureStatus(moisture) {
+            if (moisture < 30) return 'KERING';
+            else if (moisture >= 30 && moisture <= 70) return 'OPTIMAL';
+            else return 'BASAH';
+        }
+
+        function getNutrientStatus(nutrient) {
+            if (nutrient < 500) return 'RENDAH';
+            else if (nutrient >= 500 && nutrient <= 1000) return 'OPTIMAL';
+            else return 'TINGGI';
+        }
+
+        function getTemperatureStatus(temperature) {
+            if (temperature < 20) return 'DINGIN';
+            else if (temperature >= 20 && temperature <= 35) return 'OPTIMAL';
+            else return 'PANAS';
+        }
+
+        // Fungsi rekomendasi pemupukan
+        function getFertilizationRecommendation(nutrient) {
+            if (nutrient < 500) {
+                return { 
+                    level: "TINGGI", 
+                    desc: "Nutrisi tanah rendah, perlu pemupukan segera" 
+                };
+            } else if (nutrient >= 500 && nutrient <= 1000) {
+                return { 
+                    level: "SEDANG", 
+                    desc: "Lakukan pemupukan sesuai jadwal rutin" 
+                };
+            } else {
+                return { 
+                    level: "RENDAH", 
+                    desc: "Nutrisi tanah cukup, tidak perlu pemupukan" 
+                };
+            }
+        }
+        
+        // Fungsi untuk mengupdate tabel history
+        function updateHistoryTable() {
+            const nodeId = document.getElementById('history-node-selector').value;
+            const historyBody = document.getElementById('history-data');
+            historyBody.innerHTML = '';
+            
+            if (historyData[nodeId].length === 0) {
+                historyBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data riwayat</td></tr>`;
+                return;
+            }
+            
+            // Tampilkan data terbaru di atas
+            historyData[nodeId].slice().reverse().forEach(entry => {
+                const row = document.createElement('tr');
+                
+                const moistureStatus = getMoistureStatus(entry.moisture);
+                const nutrientStatus = getNutrientStatus(entry.nutrient);
+                const tempStatus = getTemperatureStatus(entry.temperature);
+                
+                row.innerHTML = `
+                    <td>${formatTimeWIB(entry.timestamp)}</td>
+                    <td>${entry.moisture.toFixed(1)}% <span class="status ${getStatusClass('moisture', entry.moisture)}">${moistureStatus}</span></td>
+                    <td>${entry.nutrient.toFixed(0)} ppm <span class="status ${getStatusClass('nutrient', entry.nutrient)}">${nutrientStatus}</span></td>
+                    <td>${entry.temperature.toFixed(1)}°C <span class="status ${getStatusClass('temperature', entry.temperature)}">${tempStatus}</span></td>
+                    <td>
+                        <span class="status ${moistureStatus === 'OPTIMAL' && nutrientStatus === 'OPTIMAL' && tempStatus === 'OPTIMAL' ? 'status-optimal' : 'status-warning'}">
+                            ${moistureStatus === 'OPTIMAL' && nutrientStatus === 'OPTIMAL' && tempStatus === 'OPTIMAL' ? 'OPTIMAL' : 'PERHATIAN'}
+                        </span>
+                    </td>
+                `;
+                
+                historyBody.appendChild(row);
             });
         }
-
-        // Fungsi untuk mengambil data historis untuk grafik
-        async function fetchHistoricalData(nodeId, timeRangeVal) {
-            try {
-                const nodeRef = database.ref(`sensor_data/node_${nodeId}`);
-                const snapshot = await nodeRef.once('value');
-                const allData = [];
-                
-                snapshot.forEach(childSnapshot => {
-                    const data = childSnapshot.val();
-                    allData.push({
-                        timestamp: data.timestamp || childSnapshot.key,
-                        moisture: data.moisture,
-                        ph: data.ph,
-                        nutrient: data.nutrient,
-                        temperature: data.temperature
-                    });
-                });
-                
-                // Urutkan berdasarkan timestamp
-                allData.sort((a, b) => a.timestamp - b.timestamp);
-                
-                // Filter berdasarkan rentang waktu
-                const endDate = Date.now();
-                let startDate = endDate;
-                
-                if (timeRangeVal === '1') {
-                    startDate -= 24 * 60 * 60 * 1000; // 24 jam
-                } else if (timeRangeVal === '3') {
-                    startDate -= 3 * 24 * 60 * 60 * 1000; // 3 hari
-                } else if (timeRangeVal === '7') {
-                    startDate -= 7 * 24 * 60 * 60 * 1000; // 7 hari
-                }
-                
-                return allData.filter(item => item.timestamp >= startDate);
-            } catch (error) {
-                console.error('Error fetching historical data:', error);
-                return [];
-            }
-        }
-
-        // Fungsi untuk mengambil data riwayat untuk tabel
-        async function fetchHistoryData(nodeId, limit) {
-            try {
-                const nodeRef = database.ref(`sensor_data/node_${nodeId}`).orderByKey().limitToLast(limit);
-                const snapshot = await nodeRef.once('value');
-                const historyData = [];
-                
-                snapshot.forEach(childSnapshot => {
-                    const data = childSnapshot.val();
-                    
-                    // Hitung rekomendasi
-                    const rec = calculateRecommendation({
-                        moisture: data.moisture,
-                        ph: data.ph,
-                        nutrient: data.nutrient,
-                        temperature: data.temperature
-                    });
-                    
-                    historyData.push({
-                        timestamp: data.timestamp || childSnapshot.key,
-                        moisture: data.moisture,
-                        ph: data.ph,
-                        nutrient: data.nutrient,
-                        temperature: data.temperature,
-                        recommendation: rec.level
-                    });
-                });
-                
-                // Urutkan dari terbaru
-                return historyData.reverse();
-            } catch (error) {
-                console.error('Error fetching history data:', error);
-                return [];
-            }
-        }
-
-        // ======================== FUNGSI UPDATE UI ======================== //
         
-        // Fungsi untuk memperbarui grafik
-        async function updateChart() {
-            const nodeId = nodeSelect.value;
-            const timeRangeVal = timeRange.value;
+        // Fungsi untuk membuat atau mengupdate grafik
+        function updateChart() {
+            const nodeId = document.getElementById('chart-node-selector').value;
+            const activeChart = document.querySelector('.chart-tab.active').dataset.chart;
             
-            // Tampilkan loading
-            const chartContainer = historyChartCanvas.closest('.chart-container');
-            chartContainer.classList.add('loading');
+            // Data untuk grafik
+            const labels = historyData[nodeId].map(entry => formatTimeForTable(entry.timestamp));
+            const moistureData = historyData[nodeId].map(entry => entry.moisture);
+            const nutrientData = historyData[nodeId].map(entry => entry.nutrient);
+            const temperatureData = historyData[nodeId].map(entry => entry.temperature);
             
-            try {
-                const historicalData = await fetchHistoricalData(nodeId, timeRangeVal);
-                
-                // Kelompokkan data per jam
-                const labels = [];
-                const moistureData = [];
-                const phData = [];
-                const nutrientData = [];
-                const temperatureData = [];
-                
-                historicalData.forEach(item => {
-                    labels.push(formatTimeWIB(item.timestamp));
-                    moistureData.push(item.moisture);
-                    phData.push(item.ph);
-                    nutrientData.push(item.nutrient);
-                    temperatureData.push(item.temperature);
-                });
-                
-                // Hancurkan grafik sebelumnya jika ada
-                if (historyChart) {
-                    historyChart.destroy();
-                }
-                
-                // Buat grafik baru
-                const ctx = historyChartCanvas.getContext('2d');
-                historyChart = new Chart(ctx, {
+            // Hancurkan grafik yang ada jika ada
+            if (sensorChart) {
+                sensorChart.destroy();
+            }
+            
+            // Konfigurasi grafik berdasarkan tipe
+            let chartConfig;
+            
+            if (activeChart === 'moisture') {
+                chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Kelembaban Tanah (%)',
+                            data: moistureData,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#3498db',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e0e0f0',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Perkembangan Kelembaban Tanah',
+                                color: '#e0e0f0',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                };
+            } else if (activeChart === 'nutrient') {
+                chartConfig = {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Nutrisi Tanah (ppm)',
+                            data: nutrientData,
+                            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e0e0f0',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Perkembangan Nutrisi Tanah',
+                                color: '#e0e0f0',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                };
+            } else if (activeChart === 'temperature') {
+                chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Suhu Tanah (°C)',
+                            data: temperatureData,
+                            borderColor: '#f39c12',
+                            backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#f39c12',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e0e0f0',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Perkembangan Suhu Tanah',
+                                color: '#e0e0f0',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                };
+            } else { // Comparison chart
+                chartConfig = {
                     type: 'line',
                     data: {
                         labels: labels,
                         datasets: [
                             {
-                                label: 'Kelembaban Tanah (%)',
+                                label: 'Kelembaban (%)',
                                 data: moistureData,
                                 borderColor: '#3498db',
                                 backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                                borderWidth: 2,
-                                tension: 0.3,
-                                fill: true
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                yAxisID: 'y',
+                                tension: 0.3
                             },
                             {
-                                label: 'pH Tanah',
-                                data: phData,
+                                label: 'Nutrisi (ppm)',
+                                data: nutrientData,
                                 borderColor: '#e74c3c',
                                 backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                                borderWidth: 2,
-                                tension: 0.3,
-                                fill: true
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                yAxisID: 'y1',
+                                tension: 0.3
                             },
                             {
-                                label: 'Nutrisi Tanah (ppm)',
-                                data: nutrientData,
-                                borderColor: '#9b59b6',
-                                backgroundColor: 'rgba(155, 89, 182, 0.1)',
-                                borderWidth: 2,
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Suhu Udara (°C)',
+                                label: 'Suhu (°C)',
                                 data: temperatureData,
-                                borderColor: '#f1c40f',
-                                backgroundColor: 'rgba(241, 196, 15, 0.1)',
-                                borderWidth: 2,
-                                tension: 0.3,
-                                fill: true
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                yAxisID: 'y2',
+                                tension: 0.3
                             }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: `Data Historis Node ${nodeId}`,
-                                font: {
-                                    size: 16
-                                }
-                            },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false
-                            },
-                            legend: {
-                                position: 'top',
-                            }
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
                         },
+                        stacked: false,
                         scales: {
-                            x: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Kelembaban (%)',
+                                    color: '#3498db'
+                                },
                                 grid: {
-                                    display: false
+                                    color: 'rgba(255, 255, 255, 0.1)'
                                 },
                                 ticks: {
-                                    maxRotation: 45,
-                                    minRotation: 45
+                                    color: '#c0c0e0'
                                 }
                             },
-                            y: {
-                                beginAtZero: false
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Nutrisi (ppm)',
+                                    color: '#e74c3c'
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            },
+                            y2: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Suhu (°C)',
+                                    color: '#f39c12'
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                },
+                                // positioning
+                                offset: true
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e0e0f0',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Perbandingan Parameter Tanah',
+                                color: '#e0e0f0',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
                             }
                         }
                     }
-                });
-            } catch (error) {
-                console.error('Error updating chart:', error);
-            } finally {
-                chartContainer.classList.remove('loading');
-            }
-        }
-
-        // Fungsi untuk memperbarui tabel riwayat
-        async function updateHistoryTable() {
-            const nodeId = historyNodeSelect.value;
-            const limit = parseInt(historyLimit.value);
-            
-            // Tampilkan loading
-            const loadingRow = `<tr><td colspan="6" class="history-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Memuat riwayat data...</p>
-            </td></tr>`;
-            historyTableBody.innerHTML = loadingRow;
-            
-            try {
-                const historyData = await fetchHistoryData(nodeId, limit);
-                
-                // Kosongkan tabel
-                historyTableBody.innerHTML = '';
-                
-                // Tambahkan data baru
-                historyData.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = `node${nodeId}`;
-                    
-                    // Format tanggal WIB
-                    const dateTime = formatTimeWIB(item.timestamp);
-                    
-                    row.innerHTML = `
-                        <td class="date-col">${dateTime}</td>
-                        <td>${item.moisture.toFixed(1)}%</td>
-                        <td>${item.ph.toFixed(1)}</td>
-                        <td>${item.nutrient.toFixed(0)} ppm</td>
-                        <td>${item.temperature.toFixed(1)}°C</td>
-                        <td>${item.recommendation}</td>
-                    `;
-                    
-                    historyTableBody.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Error updating history table:', error);
-                historyTableBody.innerHTML = `<tr><td colspan="6">Terjadi kesalahan saat memuat data</td></tr>`;
-            }
-        }
-
-        // Update node status
-        function updateNodeStatus(nodeId, status) {
-            const statusEl = document.getElementById(`node${nodeId}-status`);
-            const cardEl = document.getElementById(`node${nodeId}-card`);
-            
-            // Update status tracking
-            nodeStatus[nodeId].online = (status === 'online');
-            
-            if (statusEl) {
-                if (status === 'online') {
-                    statusEl.className = 'node-status status-online';
-                } else {
-                    statusEl.className = 'node-status status-offline';
-                }
-            }
-            
-            if (cardEl) {
-                if (status === 'online') {
-                    cardEl.classList.remove('offline');
-                } else {
-                    cardEl.classList.add('offline');
-                }
-            }
-        }
-
-        // Update system info
-        function updateSystemInfo() {
-            const activeNodes = Object.values(nodeStatus).filter(node => node.online).length;
-            activeNodesEl.textContent = activeNodes;
-            totalSensorsEl.textContent = activeNodes * 5; // 5 sensors per node
-            systemStatusEl.textContent = activeNodes > 0 ? '100%' : '0%';
-        }
-
-        // Update dashboard with sensor data
-        function updateDashboard(nodeId, data) {
-            // Update card data
-            document.getElementById(`node${nodeId}-moisture`).textContent = `${data.moisture.toFixed(1)}%`;
-            document.getElementById(`node${nodeId}-ph`).textContent = data.ph.toFixed(1);
-            document.getElementById(`node${nodeId}-nutrient`).textContent = `${data.nutrient.toFixed(0)} ppm`;
-            document.getElementById(`node${nodeId}-temperature`).textContent = `${data.temperature.toFixed(1)}°C`;
-            
-            // Update status indicators
-            updateStatusIndicator(`node${nodeId}-moisture-status`, data.moisture, [40, 60], 'Kelembaban');
-            updateStatusIndicator(`node${nodeId}-ph-status`, data.ph, [6.0, 7.5], 'pH');
-            updateStatusIndicator(`node${nodeId}-nutrient-status`, data.nutrient, [500, 700], 'Nutrisi');
-            updateStatusIndicator(`node${nodeId}-temperature-status`, data.temperature, [22, 28], 'Suhu');
-            
-            // Update gauge
-            document.getElementById(`node${nodeId}-gauge`).style.width = `${data.moisture}%`;
-            
-            // Update recommendation
-            const recommendation = calculateRecommendation(data);
-            document.getElementById(`node${nodeId}-rec-level`).textContent = recommendation.level;
-            document.getElementById(`node${nodeId}-rec-desc`).textContent = recommendation.desc;
-            
-            // Update status card
-            document.getElementById(`status-node${nodeId}-moisture`).textContent = `${data.moisture.toFixed(1)}%`;
-            document.getElementById(`status-node${nodeId}-ph`).textContent = data.ph.toFixed(1);
-            document.getElementById(`status-node${nodeId}-nutrient`).textContent = `${data.nutrient.toFixed(0)}ppm`;
-        }
-
-        // Update status indicator
-        function updateStatusIndicator(elementId, value, range, type) {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-            
-            let status, statusClass;
-            
-            if (type === 'Kelembaban') {
-                if (value < range[0]) {
-                    status = 'Kering';
-                    statusClass = 'status-danger';
-                } else if (value > range[1]) {
-                    status = 'Basah';
-                    statusClass = 'status-warning';
-                } else {
-                    status = 'Optimal';
-                    statusClass = 'status-optimal';
-                }
-            } 
-            else if (type === 'pH') {
-                if (value < range[0]) {
-                    status = 'Asam';
-                    statusClass = 'status-danger';
-                } else if (value > range[1]) {
-                    status = 'Basa';
-                    statusClass = 'status-warning';
-                } else {
-                    status = 'Optimal';
-                    statusClass = 'status-optimal';
-                }
-            }
-            else if (type === 'Nutrisi') {
-                if (value < range[0]) {
-                    status = 'Rendah';
-                    statusClass = 'status-danger';
-                } else if (value < range[1]) {
-                    status = 'Sedang';
-                    statusClass = 'status-warning';
-                } else {
-                    status = 'Tinggi';
-                    statusClass = 'status-optimal';
-                }
-            }
-            else if (type === 'Suhu') {
-                if (value < range[0]) {
-                    status = 'Dingin';
-                    statusClass = 'status-warning';
-                } else if (value > range[1]) {
-                    status = 'Panas';
-                    statusClass = 'status-danger';
-                } else {
-                    status = 'Optimal';
-                    statusClass = 'status-optimal';
-                }
-            }
-            
-            element.textContent = status;
-            element.className = `status ${statusClass}`;
-        }
-
-        // Calculate fertilization recommendation
-        function calculateRecommendation(data) {
-            let issues = 0;
-            
-            // Check moisture
-            if (data.moisture < 40 || data.moisture > 80) issues++;
-            
-            // Check pH
-            if (data.ph < 6.0 || data.ph > 7.5) issues++;
-            
-            // Check nutrients
-            if (data.nutrient < 500) issues++;
-            
-            // Check temperature
-            if (data.temperature < 18 || data.temperature > 32) issues++;
-            
-            if (issues >= 3) {
-                return {
-                    level: 'TINGGI',
-                    desc: 'Berikan pupuk NPK dengan dosis 250g per 10m² dan kapur pertanian'
-                };
-            } else if (issues === 2) {
-                return {
-                    level: 'SEDANG',
-                    desc: 'Berikan pupuk NPK dengan dosis 150g per 10m²'
-                };
-            } else {
-                return {
-                    level: 'RENDAH',
-                    desc: 'Berikan pupuk NPK dengan dosis 50g per 10m²'
                 };
             }
+            
+            // Buat grafik baru
+            sensorChart = new Chart(ctx, chartConfig);
         }
-
-        // ======================== INISIALISASI ======================== //
         
-        // Event listeners untuk grafik dan riwayat
-        refreshChartBtn.addEventListener('click', updateChart);
-        refreshHistoryBtn.addEventListener('click', updateHistoryTable);
-        nodeSelect.addEventListener('change', updateChart);
-        timeRange.addEventListener('change', updateChart);
-        historyNodeSelect.addEventListener('change', updateHistoryTable);
-        historyLimit.addEventListener('change', updateHistoryTable);
+        // Simulasi data untuk demo
+        function simulateData() {
+            // Node 1
+            document.getElementById('node1-moisture').textContent = '62.5%';
+            document.getElementById('node1-moisture-status').textContent = 'OPTIMAL';
+            document.getElementById('node1-gauge').style.width = '62.5%';
+            document.getElementById('node1-moisture-percent').textContent = '62.5%';
+            
+            document.getElementById('node1-nutrient').textContent = '780 ppm';
+            document.getElementById('node1-nutrient-status').textContent = 'OPTIMAL';
+            
+            document.getElementById('node1-temperature').textContent = '26.4°C';
+            document.getElementById('node1-temperature-status').textContent = 'OPTIMAL';
+            
+            document.getElementById('node1-rec-level').textContent = 'SEDANG';
+            document.getElementById('node1-rec-desc').textContent = 'Lakukan pemupukan sesuai jadwal rutin';
+            
+            // Node 2
+            document.getElementById('node2-moisture').textContent = '42.3%';
+            document.getElementById('node2-moisture-status').textContent = 'OPTIMAL';
+            document.getElementById('node2-gauge').style.width = '42.3%';
+            document.getElementById('node2-moisture-percent').textContent = '42.3%';
+            
+            document.getElementById('node2-nutrient').textContent = '420 ppm';
+            document.getElementById('node2-nutrient-status').textContent = 'RENDAH';
+            document.getElementById('node2-nutrient-status').className = 'status status-danger';
+            
+            document.getElementById('node2-temperature').textContent = '28.7°C';
+            document.getElementById('node2-temperature-status').textContent = 'OPTIMAL';
+            
+            document.getElementById('node2-rec-level').textContent = 'TINGGI';
+            document.getElementById('node2-rec-desc').textContent = 'Nutrisi tanah rendah, perlu pemupukan segera';
+            
+            // Buat data riwayat simulasi
+            const now = new Date();
+            for (let i = 0; i < 10; i++) {
+                const timestamp = now.getTime() - (10 - i) * 300000; // setiap 5 menit
+                historyData[1].push({
+                    timestamp: timestamp,
+                    moisture: 50 + Math.random() * 30 - 15,
+                    nutrient: 600 + Math.random() * 500 - 250,
+                    temperature: 25 + Math.random() * 10 - 5
+                });
+                
+                historyData[2].push({
+                    timestamp: timestamp,
+                    moisture: 40 + Math.random() * 30 - 15,
+                    nutrient: 400 + Math.random() * 400 - 200,
+                    temperature: 27 + Math.random() * 8 - 4
+                });
+            }
+        }
 
-        // Inisialisasi awal
-        window.addEventListener('load', () => {
-            // Set default values
-            updateSystemInfo();
-            
-            // Reset semua data node
-            resetNodeData('1');
-            resetNodeData('2');
-            resetNodeData('3');
-            
-            // Load initial data
-            updateChart();
-            updateHistoryTable();
+        // Listen for data updates dari semua node
+        Object.keys(nodes).forEach(nodeId => {
+            nodes[nodeId].on('value', (snapshot) => {
+                updateNodeDashboard(parseInt(nodeId), snapshot);
+            });
+        });
+        
+        // Event listener untuk tab
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Hapus kelas active dari semua tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // Tambahkan kelas active ke tab yang diklik
+                tab.classList.add('active');
+                
+                // Sembunyikan semua konten
+                document.getElementById('dashboard-content').style.display = 'none';
+                document.getElementById('history-content').style.display = 'none';
+                document.getElementById('chart-content').style.display = 'none';
+                
+                // Tampilkan konten yang sesuai
+                const tabName = tab.dataset.tab;
+                if (tabName === 'dashboard') {
+                    document.getElementById('dashboard-content').style.display = 'block';
+                } else if (tabName === 'history') {
+                    document.getElementById('history-content').style.display = 'block';
+                    updateHistoryTable();
+                } else if (tabName === 'charts') {
+                    document.getElementById('chart-content').style.display = 'block';
+                    updateChart();
+                }
+            });
+        });
+        
+        // Event listener untuk selector node di history
+        document.getElementById('history-node-selector').addEventListener('change', updateHistoryTable);
+        
+        // Event listener untuk selector node di grafik
+        document.getElementById('chart-node-selector').addEventListener('change', updateChart);
+        
+        // Event listener untuk tab grafik
+        document.querySelectorAll('.chart-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                updateChart();
+            });
+        });
+
+        // Inisialisasi dengan data simulasi
+        simulateData();
+        updateHistoryTable();
+        updateChart();
+
+        // Animasi untuk sensor item
+        const sensorItems = document.querySelectorAll('.sensor-item');
+        sensorItems.forEach((item, index) => {
+            item.style.animationDelay = `${index * 0.1}s`;
         });
     </script>
 </body>
