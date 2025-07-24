@@ -27,6 +27,7 @@
             --success: #8bc34a;
             --glass-bg: rgba(40, 40, 60, 0.4);
             --history-bg: rgba(30, 30, 50, 0.7);
+            --offline: #7f8c8d;
         }
 
         * {
@@ -287,6 +288,10 @@
             background: var(--node2-color);
         }
 
+        .card.offline::before {
+            background: var(--offline);
+        }
+
         @keyframes cardAppear {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
@@ -352,9 +357,14 @@
             box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
         }
 
+        .offline-badge {
+            background: var(--offline);
+            box-shadow: 0 0 10px rgba(127, 140, 141, 0.5);
+        }
+
         .sensor-data {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 25px;
         }
@@ -435,6 +445,7 @@
         .status-optimal { background: rgba(46, 125, 50, 0.3); color: #8bc34a; border: 1px solid #8bc34a; }
         .status-warning { background: rgba(255, 152, 0, 0.3); color: #ff9800; border: 1px solid #ff9800; }
         .status-danger { background: rgba(244, 67, 54, 0.3); color: #f44336; border: 1px solid #f44336; }
+        .status-offline { background: rgba(127, 140, 141, 0.3); color: #bdc3c7; border: 1px solid #bdc3c7; }
 
         .gauge-container {
             margin: 25px 0;
@@ -475,6 +486,11 @@
         .node2 .gauge-fill {
             background: linear-gradient(90deg, #ff9800, var(--node2-color));
             box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .offline .gauge-fill {
+            background: linear-gradient(90deg, #ff9800, var(--offline));
+            box-shadow: 0 0 10px rgba(127, 140, 141, 0.5);
         }
 
         .gauge-labels {
@@ -691,7 +707,7 @@
                 </div>
                 <div class="logo-text">
                     <h1>Monitoring Kualitas Tanah Greenhouse</h1>
-                    <p>Sistem Pemantauan Kualitas Tanah</p>
+                    <p>Sistem Pemantauan Kualitas Tanah Multi Node</p>
                 </div>
             </div>
             <div class="system-info">
@@ -751,8 +767,17 @@
                                 <i class="fas fa-thermometer-half"></i>
                             </div>
                             <div class="sensor-value" id="node1-temperature">--</div>
-                            <div class="sensor-label">Suhu Tanah</div>
+                            <div class="sensor-label">Suhu Udara</div>
                             <div class="status status-optimal" id="node1-temperature-status">--</div>
+                        </div>
+
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div class="sensor-value" id="node1-humidity">--</div>
+                            <div class="sensor-label">Kelembaban Udara</div>
+                            <div class="status status-optimal" id="node1-humidity-status">--</div>
                         </div>
                     </div>
 
@@ -811,8 +836,17 @@
                                 <i class="fas fa-thermometer-half"></i>
                             </div>
                             <div class="sensor-value" id="node2-temperature">--</div>
-                            <div class="sensor-label">Suhu Tanah</div>
+                            <div class="sensor-label">Suhu Udara</div>
                             <div class="status status-optimal" id="node2-temperature-status">--</div>
+                        </div>
+
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div class="sensor-value" id="node2-humidity">--</div>
+                            <div class="sensor-label">Kelembaban Udara</div>
+                            <div class="status status-optimal" id="node2-humidity-status">--</div>
                         </div>
                     </div>
 
@@ -859,7 +893,8 @@
                             <th>Waktu (WIB)</th>
                             <th>Kelembaban</th>
                             <th>Nutrisi</th>
-                            <th>Suhu</th>
+                            <th>Suhu Udara</th>
+                            <th>Kelembaban Udara</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -881,9 +916,10 @@
             </div>
             
             <div class="chart-tabs">
-                <button class="chart-tab active" data-chart="moisture">Kelembaban</button>
+                <button class="chart-tab active" data-chart="moisture">Kelembaban Tanah</button>
+                <button class="chart-tab" data-chart="humidity">Kelembaban Udara</button>
                 <button class="chart-tab" data-chart="nutrient">Nutrisi</button>
-                <button class="chart-tab" data-chart="temperature">Suhu</button>
+                <button class="chart-tab" data-chart="temperature">Suhu Udara</button>
                 <button class="chart-tab" data-chart="comparison">Perbandingan</button>
             </div>
             
@@ -926,6 +962,15 @@
             1: [],
             2: []
         };
+        
+        // Variabel untuk menyimpan waktu terakhir update
+        const nodeLastUpdate = {
+            1: 0,
+            2: 0
+        };
+        
+        // Threshold untuk offline (5 menit)
+        const OFFLINE_THRESHOLD = 5 * 60 * 1000; // 5 menit dalam milidetik
         
         // Format waktu untuk Indonesia (WIB)
         function formatTimeWIB(timestamp) {
@@ -976,11 +1021,10 @@
             const now = new Date();
             
             // Waktu WIB (UTC+7)
-            const wibHours = (now.getUTCHours() + 7) % 24;
-            const displayHours = wibHours.toString().padStart(2, '0');
-            const displayMinutes = now.getUTCMinutes().toString().padStart(2, '0');
-            const displaySeconds = now.getUTCSeconds().toString().padStart(2, '0');
-            document.getElementById('wib-time').textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('wib-time').textContent = `${hours}:${minutes}:${seconds}`;
             
             // Tanggal lengkap
             document.getElementById('current-date').textContent = formatFullDate(now);
@@ -989,17 +1033,64 @@
         // Update waktu setiap detik
         setInterval(updateTimeDisplay, 1000);
         updateTimeDisplay(); // Panggil pertama kali
+        
+        // Fungsi untuk memeriksa status node dan update jumlah node aktif
+        function checkNodeStatus() {
+            const now = Date.now();
+            let activeNodes = 0;
+            
+            // Periksa Node 1
+            const node1Badge = document.querySelector('#node1-card .node-badge');
+            const node1Card = document.getElementById('node1-card');
+            if (now - nodeLastUpdate[1] > OFFLINE_THRESHOLD) {
+                node1Badge.textContent = 'OFFLINE';
+                node1Badge.classList.remove('node1-badge');
+                node1Badge.classList.add('offline-badge');
+                node1Card.classList.add('offline');
+            } else {
+                node1Badge.textContent = 'AKTIF';
+                node1Badge.classList.remove('offline-badge');
+                node1Badge.classList.add('node1-badge');
+                node1Card.classList.remove('offline');
+                activeNodes++;
+            }
+            
+            // Periksa Node 2
+            const node2Badge = document.querySelector('#node2-card .node-badge');
+            const node2Card = document.getElementById('node2-card');
+            if (now - nodeLastUpdate[2] > OFFLINE_THRESHOLD) {
+                node2Badge.textContent = 'OFFLINE';
+                node2Badge.classList.remove('node2-badge');
+                node2Badge.classList.add('offline-badge');
+                node2Card.classList.add('offline');
+            } else {
+                node2Badge.textContent = 'AKTIF';
+                node2Badge.classList.remove('offline-badge');
+                node2Badge.classList.add('node2-badge');
+                node2Card.classList.remove('offline');
+                activeNodes++;
+            }
+            
+            // Update jumlah node aktif
+            document.getElementById('total-nodes').textContent = activeNodes;
+        }
 
         // Fungsi untuk mengupdate dashboard per node
         function updateNodeDashboard(nodeId, snapshot) {
             const data = snapshot.val();
             if (data) {
+                // Update waktu terakhir
+                nodeLastUpdate[nodeId] = Date.now();
+                
+                // Panggil fungsi pengecekan status
+                checkNodeStatus();
+                
                 // Ambil data terbaru
                 const keys = Object.keys(data);
                 const latestKey = keys[keys.length - 1];
                 const latestData = data[latestKey];
                 
-                // Update waktu terakhir
+                // Update waktu update terakhir
                 const now = new Date();
                 document.getElementById('last-update').textContent = 
                     `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -1018,14 +1109,14 @@
                 document.getElementById(`node${nodeId}-temperature`).textContent = latestData.temperature.toFixed(1) + '°C';
                 document.getElementById(`node${nodeId}-temperature-status`).textContent = getTemperatureStatus(latestData.temperature);
                 document.getElementById(`node${nodeId}-temperature-status`).className = `status ${getStatusClass('temperature', latestData.temperature)}`;
+                
+                document.getElementById(`node${nodeId}-humidity`).textContent = latestData.humidity.toFixed(1) + '%';
+                document.getElementById(`node${nodeId}-humidity-status`).textContent = getHumidityStatus(latestData.humidity);
+                document.getElementById(`node${nodeId}-humidity-status`).className = `status ${getStatusClass('humidity', latestData.humidity)}`;
 
                 // Update rekomendasi
-                const rec = getFertilizationRecommendation(latestData.nutrient);
-                document.getElementById(`node${nodeId}-rec-level`).textContent = rec.level;
-                document.getElementById(`node${nodeId}-rec-desc`).textContent = rec.desc;
-                
-                // Update status node
-                document.querySelector(`#node${nodeId}-card .node-badge`).textContent = 'AKTIF';
+                document.getElementById(`node${nodeId}-rec-level`).textContent = latestData.rec_level;
+                document.getElementById(`node${nodeId}-rec-desc`).textContent = latestData.rec_desc;
                 
                 // Tambahkan ke history
                 const timestamp = new Date().getTime();
@@ -1036,7 +1127,8 @@
                     timestamp: timestamp,
                     moisture: latestData.moisture,
                     nutrient: latestData.nutrient,
-                    temperature: latestData.temperature
+                    temperature: latestData.temperature,
+                    humidity: latestData.humidity
                 });
                 
                 // Update tampilan history jika sedang aktif
@@ -1068,6 +1160,11 @@
                 else if (value >= 20 && value <= 35) return 'status-optimal';
                 else return 'status-danger';
             }
+            else if (type === 'humidity') {
+                if (value < 30) return 'status-warning';
+                else if (value >= 30 && value <= 70) return 'status-optimal';
+                else return 'status-danger';
+            }
             return 'status-optimal';
         }
 
@@ -1089,27 +1186,13 @@
             else if (temperature >= 20 && temperature <= 35) return 'OPTIMAL';
             else return 'PANAS';
         }
-
-        // Fungsi rekomendasi pemupukan
-        function getFertilizationRecommendation(nutrient) {
-            if (nutrient < 500) {
-                return { 
-                    level: "TINGGI", 
-                    desc: "Nutrisi tanah rendah, perlu pemupukan segera" 
-                };
-            } else if (nutrient >= 500 && nutrient <= 1000) {
-                return { 
-                    level: "SEDANG", 
-                    desc: "Lakukan pemupukan sesuai jadwal rutin" 
-                };
-            } else {
-                return { 
-                    level: "RENDAH", 
-                    desc: "Nutrisi tanah cukup, tidak perlu pemupukan" 
-                };
-            }
-        }
         
+        function getHumidityStatus(humidity) {
+            if (humidity < 30) return 'RENDAH';
+            else if (humidity >= 30 && humidity <= 70) return 'OPTIMAL';
+            else return 'TINGGI';
+        }
+
         // Fungsi untuk mengupdate tabel history
         function updateHistoryTable() {
             const nodeId = document.getElementById('history-node-selector').value;
@@ -1117,7 +1200,7 @@
             historyBody.innerHTML = '';
             
             if (historyData[nodeId].length === 0) {
-                historyBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data riwayat</td></tr>`;
+                historyBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Belum ada data riwayat</td></tr>`;
                 return;
             }
             
@@ -1128,12 +1211,14 @@
                 const moistureStatus = getMoistureStatus(entry.moisture);
                 const nutrientStatus = getNutrientStatus(entry.nutrient);
                 const tempStatus = getTemperatureStatus(entry.temperature);
+                const humidityStatus = getHumidityStatus(entry.humidity);
                 
                 row.innerHTML = `
                     <td>${formatTimeWIB(entry.timestamp)}</td>
                     <td>${entry.moisture.toFixed(1)}% <span class="status ${getStatusClass('moisture', entry.moisture)}">${moistureStatus}</span></td>
                     <td>${entry.nutrient.toFixed(0)} ppm <span class="status ${getStatusClass('nutrient', entry.nutrient)}">${nutrientStatus}</span></td>
                     <td>${entry.temperature.toFixed(1)}°C <span class="status ${getStatusClass('temperature', entry.temperature)}">${tempStatus}</span></td>
+                    <td>${entry.humidity.toFixed(1)}% <span class="status ${getStatusClass('humidity', entry.humidity)}">${humidityStatus}</span></td>
                     <td>
                         <span class="status ${moistureStatus === 'OPTIMAL' && nutrientStatus === 'OPTIMAL' && tempStatus === 'OPTIMAL' ? 'status-optimal' : 'status-warning'}">
                             ${moistureStatus === 'OPTIMAL' && nutrientStatus === 'OPTIMAL' && tempStatus === 'OPTIMAL' ? 'OPTIMAL' : 'PERHATIAN'}
@@ -1155,6 +1240,7 @@
             const moistureData = historyData[nodeId].map(entry => entry.moisture);
             const nutrientData = historyData[nodeId].map(entry => entry.nutrient);
             const temperatureData = historyData[nodeId].map(entry => entry.temperature);
+            const humidityData = historyData[nodeId].map(entry => entry.humidity);
             
             // Hancurkan grafik yang ada jika ada
             if (sensorChart) {
@@ -1216,6 +1302,67 @@
                             title: {
                                 display: true,
                                 text: 'Perkembangan Kelembaban Tanah',
+                                color: '#e0e0f0',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                };
+            } else if (activeChart === 'humidity') {
+                chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Kelembaban Udara (%)',
+                            data: humidityData,
+                            borderColor: '#9b59b6',
+                            backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#9b59b6',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#c0c0e0'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e0e0f0',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Perkembangan Kelembaban Udara',
                                 color: '#e0e0f0',
                                 font: {
                                     size: 18,
@@ -1287,7 +1434,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Suhu Tanah (°C)',
+                            label: 'Suhu Udara (°C)',
                             data: temperatureData,
                             borderColor: '#f39c12',
                             backgroundColor: 'rgba(243, 156, 18, 0.1)',
@@ -1330,7 +1477,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Perkembangan Suhu Tanah',
+                                text: 'Perkembangan Suhu Udara',
                                 color: '#e0e0f0',
                                 font: {
                                     size: 18,
@@ -1347,10 +1494,20 @@
                         labels: labels,
                         datasets: [
                             {
-                                label: 'Kelembaban (%)',
+                                label: 'Kelembaban Tanah (%)',
                                 data: moistureData,
                                 borderColor: '#3498db',
                                 backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                yAxisID: 'y',
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Kelembaban Udara (%)',
+                                data: humidityData,
+                                borderColor: '#9b59b6',
+                                backgroundColor: 'rgba(155, 89, 182, 0.1)',
                                 borderWidth: 3,
                                 pointRadius: 4,
                                 yAxisID: 'y',
@@ -1367,7 +1524,7 @@
                                 tension: 0.3
                             },
                             {
-                                label: 'Suhu (°C)',
+                                label: 'Suhu Udara (°C)',
                                 data: temperatureData,
                                 borderColor: '#f39c12',
                                 backgroundColor: 'rgba(243, 156, 18, 0.1)',
@@ -1425,7 +1582,7 @@
                                 position: 'right',
                                 title: {
                                     display: true,
-                                    text: 'Suhu (°C)',
+                                    text: 'Suhu Udara (°C)',
                                     color: '#f39c12'
                                 },
                                 grid: {
@@ -1487,6 +1644,9 @@
             document.getElementById('node1-temperature').textContent = '26.4°C';
             document.getElementById('node1-temperature-status').textContent = 'OPTIMAL';
             
+            document.getElementById('node1-humidity').textContent = '45.5%';
+            document.getElementById('node1-humidity-status').textContent = 'OPTIMAL';
+            
             document.getElementById('node1-rec-level').textContent = 'SEDANG';
             document.getElementById('node1-rec-desc').textContent = 'Lakukan pemupukan sesuai jadwal rutin';
             
@@ -1503,8 +1663,16 @@
             document.getElementById('node2-temperature').textContent = '28.7°C';
             document.getElementById('node2-temperature-status').textContent = 'OPTIMAL';
             
+            document.getElementById('node2-humidity').textContent = '52.1%';
+            document.getElementById('node2-humidity-status').textContent = 'OPTIMAL';
+            
             document.getElementById('node2-rec-level').textContent = 'TINGGI';
             document.getElementById('node2-rec-desc').textContent = 'Nutrisi tanah rendah, perlu pemupukan segera';
+            
+            // Update waktu terakhir
+            nodeLastUpdate[1] = Date.now();
+            // Simulasikan Node 2 offline (tidak update data)
+            nodeLastUpdate[2] = Date.now() - (5 * 60 * 1000 + 10000); // 5 menit 10 detik lalu
             
             // Buat data riwayat simulasi
             const now = new Date();
@@ -1514,14 +1682,16 @@
                     timestamp: timestamp,
                     moisture: 50 + Math.random() * 30 - 15,
                     nutrient: 600 + Math.random() * 500 - 250,
-                    temperature: 25 + Math.random() * 10 - 5
+                    temperature: 25 + Math.random() * 10 - 5,
+                    humidity: 45 + Math.random() * 20 - 10
                 });
                 
                 historyData[2].push({
                     timestamp: timestamp,
                     moisture: 40 + Math.random() * 30 - 15,
                     nutrient: 400 + Math.random() * 400 - 200,
-                    temperature: 27 + Math.random() * 8 - 4
+                    temperature: 27 + Math.random() * 8 - 4,
+                    humidity: 50 + Math.random() * 20 - 10
                 });
             }
         }
@@ -1577,8 +1747,12 @@
 
         // Inisialisasi dengan data simulasi
         simulateData();
+        checkNodeStatus(); // Periksa status awal
         updateHistoryTable();
         updateChart();
+
+        // Panggil pengecekan status setiap menit
+        setInterval(checkNodeStatus, 60000);
 
         // Animasi untuk sensor item
         const sensorItems = document.querySelectorAll('.sensor-item');
